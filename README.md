@@ -104,7 +104,7 @@ None so far
 
 ## License
 
-GPL 2. Please see [License File](LICENSE.md) for more information.
+GPL 2. Please see [License File](LICENSE.txt) for more information.
 
 [ico-license]: https://camo.githubusercontent.com/1e084a16de2002b053b5087d7c652941091cc5ea/687474703a2f2f696d672e736869656c64732e696f2f62616467652f6c6963656e73652d47504c76322d627269676874677265656e2e737667
 [ico-travis]: https://travis-ci.org/MartinSotirov/modern-templates.svg?branch=master
