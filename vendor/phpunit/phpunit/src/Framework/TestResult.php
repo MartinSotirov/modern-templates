@@ -8,6 +8,7 @@
  * file that was distributed with this source code.
  */
 
+use SebastianBergmann\Comparator\Comparator;
 use SebastianBergmann\ResourceOperations\ResourceOperations;
 
 /**
@@ -743,15 +744,25 @@ class PHPUnit_Framework_TestResult implements Countable
             $linesToBeUsed    = [];
 
             if ($append && $test instanceof PHPUnit_Framework_TestCase) {
-                $linesToBeCovered = PHPUnit_Util_Test::getLinesToBeCovered(
-                    get_class($test),
-                    $test->getName(false)
-                );
+                try {
+                    $linesToBeCovered = PHPUnit_Util_Test::getLinesToBeCovered(
+                        get_class($test),
+                        $test->getName(false)
+                    );
 
-                $linesToBeUsed = PHPUnit_Util_Test::getLinesToBeUsed(
-                    get_class($test),
-                    $test->getName(false)
-                );
+                    $linesToBeUsed = PHPUnit_Util_Test::getLinesToBeUsed(
+                        get_class($test),
+                        $test->getName(false)
+                    );
+                } catch (PHPUnit_Framework_InvalidCoversTargetException $cce) {
+                    $this->addWarning(
+                        $test,
+                        new PHPUnit_Framework_Warning(
+                            $cce->getMessage()
+                        ),
+                        $time
+                    );
+                }
             }
 
             try {
@@ -761,19 +772,22 @@ class PHPUnit_Framework_TestResult implements Countable
                     $linesToBeUsed
                 );
             } catch (PHP_CodeCoverage_UnintentionallyCoveredCodeException $cce) {
+                if ($this->notOnlyBecauseOfComparators($cce)) {
+                    $this->addFailure(
+                        $test,
+                        new PHPUnit_Framework_UnintentionallyCoveredCodeError(
+                            'This test executed code that is not listed as code to be covered or used:' .
+                            PHP_EOL . $cce->getMessage()
+                        ),
+                        $time
+                    );
+                }
+            } catch (PHP_CodeCoverage_CoveredCodeNotExecutedException $cce) {
                 $this->addFailure(
                     $test,
-                    new PHPUnit_Framework_UnintentionallyCoveredCodeError(
-                        'This test executed code that is not listed as code to be covered or used:' .
+                    new PHPUnit_Framework_CoveredCodeNotExecutedException(
+                        'This test did not execute all the code that is listed as code to be covered:' .
                         PHP_EOL . $cce->getMessage()
-                    ),
-                    $time
-                );
-            } catch (PHPUnit_Framework_InvalidCoversTargetException $cce) {
-                $this->addFailure(
-                    $test,
-                    new PHPUnit_Framework_InvalidCoversTargetError(
-                        $cce->getMessage()
                     ),
                     $time
                 );
@@ -1268,5 +1282,29 @@ class PHPUnit_Framework_TestResult implements Countable
         }
 
         return $classes;
+    }
+
+    /**
+     * @param PHP_CodeCoverage_UnintentionallyCoveredCodeException $cce
+     *
+     * @return bool
+     */
+    private function notOnlyBecauseOfComparators(PHP_CodeCoverage_UnintentionallyCoveredCodeException $cce)
+    {
+        foreach ($cce->getUnintentionallyCoveredUnits() as $unit) {
+            $unit = explode('::', $unit);
+
+            if (count($unit) != 2) {
+                continue;
+            }
+
+            $class = new ReflectionClass($unit[0]);
+
+            if (!$class->isSubclassOf(Comparator::class)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -77,7 +77,10 @@ class PHPUnit_TextUI_Command
         'stop-on-incomplete'      => null,
         'stop-on-risky'           => null,
         'stop-on-skipped'         => null,
+        'fail-on-warning'         => null,
+        'fail-on-risky'           => null,
         'strict-coverage'         => null,
+        'disable-coverage-ignore' => null,
         'strict-global-state'     => null,
         'tap'                     => null,
         'teamcity'                => null,
@@ -152,24 +155,20 @@ class PHPUnit_TextUI_Command
         unset($this->arguments['testFile']);
 
         try {
-            $result = $runner->doRun($suite, $this->arguments);
+            $result = $runner->doRun($suite, $this->arguments, $exit);
         } catch (PHPUnit_Framework_Exception $e) {
             print $e->getMessage() . "\n";
         }
 
-        $ret = PHPUnit_TextUI_TestRunner::FAILURE_EXIT;
+        $return = PHPUnit_TextUI_TestRunner::FAILURE_EXIT;
 
         if (isset($result) && $result->wasSuccessful()) {
-            $ret = PHPUnit_TextUI_TestRunner::SUCCESS_EXIT;
+            $return = PHPUnit_TextUI_TestRunner::SUCCESS_EXIT;
         } elseif (!isset($result) || $result->errorCount() > 0) {
-            $ret = PHPUnit_TextUI_TestRunner::EXCEPTION_EXIT;
+            $return = PHPUnit_TextUI_TestRunner::EXCEPTION_EXIT;
         }
 
-        if ($exit) {
-            exit($ret);
-        } else {
-            return $ret;
-        }
+        return $return;
     }
 
     /**
@@ -418,6 +417,14 @@ class PHPUnit_TextUI_Command
                     $this->arguments['stopOnSkipped'] = true;
                     break;
 
+                case '--fail-on-warning':
+                    $this->arguments['failOnWarning'] = true;
+                    break;
+
+                case '--fail-on-risky':
+                    $this->arguments['failOnRisky'] = true;
+                    break;
+
                 case '--tap':
                     $this->arguments['printer'] = 'PHPUnit_Util_Log_TAP';
                     break;
@@ -477,6 +484,10 @@ class PHPUnit_TextUI_Command
 
                 case '--strict-coverage':
                     $this->arguments['strictCoverage'] = true;
+                    break;
+
+                case '--disable-coverage-ignore':
+                    $this->arguments['disableCodeCoverageIgnore'] = true;
                     break;
 
                 case '--strict-global-state':
@@ -922,6 +933,7 @@ Code Coverage Options:
                             Default: Standard output.
   --coverage-xml <dir>      Generate code coverage report in PHPUnit XML format.
   --whitelist <dir>         Whitelist <dir> for code coverage analysis.
+  --disable-coverage-ignore Disable annotations for ignoring code coverage.
 
 Logging Options:
 
@@ -946,7 +958,7 @@ Test Selection Options:
 Test Execution Options:
 
   --report-useless-tests    Be strict about tests that do not test anything.
-  --strict-coverage         Be strict about unintentionally covered code.
+  --strict-coverage         Be strict about @covers annotation usage.
   --strict-global-state     Be strict about changes to global state
   --disallow-test-output    Be strict about output during tests.
   --disallow-resource-usage Be strict about resource usage during small tests.
@@ -967,6 +979,8 @@ Test Execution Options:
   --stop-on-risky           Stop execution upon first risky test.
   --stop-on-skipped         Stop execution upon first skipped test.
   --stop-on-incomplete      Stop execution upon first incomplete test.
+  --fail-on-warning         Treat tests with warnings as failures.
+  --fail-on-risky           Treat risky tests as failures.
   -v|--verbose              Output more verbose information.
   --debug                   Display debugging information during test execution.
 
