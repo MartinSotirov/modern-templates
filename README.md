@@ -15,9 +15,76 @@ $ git clone https://github.com/MartinSotirov/modern-templates.git
 
 ## Usage
 
+### Enabling Twig
 ``` php
-$skeleton = new League\Skeleton();
-echo $skeleton->echoPhrase('Hello, League!');
+add_filter( 'wpmt_engine', 'make_twig_engine', 2, 10 );
+function make_twig_engine( $engine, $WPMT ) {
+    $settings = array(
+        'templatePath' => get_stylesheet_directory() . '/templates',
+        'cachePath'    => get_stylesheet_directory() . '/templates/cache'
+    );
+	$engine = $WPMT->makeEngine('Twig', $settings);
+	return $engine;
+}
+```
+
+### Enabling Blade
+``` php
+add_filter( 'wpmt_engine', 'make_blade_engine', 2, 10 );
+function make_blade_engine( $engine, $WPMT ) {
+    $settings = array(
+        'templatePath' => get_stylesheet_directory() . '/templates',
+        'cachePath'    => get_stylesheet_directory() . '/templates/cache'
+    );
+	$engine = $WPMT->makeEngine('Blade', $settings);
+	return $engine;
+}
+```
+
+### Enabling Smarty
+``` php
+add_filter( 'wpmt_engine', 'make_smarty_engine', 2, 10 );
+function make_smarty_engine( $engine, $WPMT ) {
+    $settings = array(
+        'templatePath' => get_stylesheet_directory() . '/templates',
+        'cachePath'    => get_stylesheet_directory() . '/templates/cache',
+        'compilePath'  => get_stylesheet_directory() . '/templates/compile',
+        'configPath'   => get_stylesheet_directory() . '/templates/config',
+    );
+	$engine = $WPMT->makeEngine('Smarty', $settings);
+	return $engine;
+}
+```
+
+### Enabling Mustache
+``` php
+add_filter( 'wpmt_engine', 'make_mustache_engine', 2, 10 );
+function make_mustache_engine( $engine, $WPMT ) {
+    $settings = array(
+        'templatePath' => get_stylesheet_directory() . '/templates',
+        'cachePath'    => get_stylesheet_directory() . '/templates/cache',
+        'partialsPath' => get_stylesheet_directory() . '/templates/partials',
+    );
+	$engine = $WPMT->makeEngine('Mustache', $settings);
+	return $engine;
+}
+```
+
+### Rendering templates
+The plugin abstracts away the technicalities of all four templating engines and provides
+a consistent API for rendering. With the WordPress plugin enabled, you have access to the
+global variable $WPMT. Use it to get an instance of the templating engine you instanciated
+in the `wpmt_engine` hook
+``` php
+$twig = $WPMT->getEngine();
+$data = [
+    'wp_head'    => $WPMT->get('wp_head'),
+    'wp_footer'  => $WPMT->get('wp_footer'),
+    'body_class' => $WPMT->get('body_class'),
+    'post'       => get_queried_object(),
+];
+
+echo $twig->render('single-post.html', $data);
 ```
 
 ## Change log
