@@ -15,7 +15,7 @@ env:
   - WP_VERSION=latest WP_MULTISITE=0
 
 before_install:
-  - php /home/travis/.phpenv/versions/5.4/bin/composer self-update
+  - /home/travis/.phpenv/versions/5.4/bin/composer self-update
   - mkdir /home/travis/build/MartinSotirov/modern-templates/tests/templates/cache
   - mkdir /home/travis/build/MartinSotirov/modern-templates/tests/templates/partials
 
