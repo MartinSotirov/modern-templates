@@ -1,0 +1,5 @@
+*.swp
+tests/templates/cache/*
+tests/templates/partials/*
+tests/templates/compile/*
+

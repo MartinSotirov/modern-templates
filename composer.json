@@ -1,0 +1,27 @@
+{
+    "name": "martinsotirov/modern-templates",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0",
+    "authors": [
+        {
+            "name": "Martin Sotirov",
+            "email": "martin@evil.ninja"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "/Users/msotirov/PHP/packages/wpunit"
+        }
+    ],
+    "require": {
+        "twig/twig": "^1.23",
+        "philo/laravel-blade": "^3.1",
+        "mustache/mustache": "^2.9",
+        "smarty/smarty": "^3.1",
+        "martin-sotirov/wpunit": "dev-master"
+    },
+    "autoload": {
+    	"psr-4": {"WPMT\\": "src/"}
+    }
+}
